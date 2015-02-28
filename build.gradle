@@ -1,0 +1,33 @@
+def getVersionName = { ->
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'rev-parse', 'HEAD'
+        standardOutput = stdout
+    }
+    return stdout.toString().trim().substring(0, 7);
+}
+
+apply plugin: 'java'
+apply plugin: 'idea'
+
+defaultTasks 'build'
+
+group = 'mcd'
+archivesBaseName = 'mcd'
+version = getVersionName()
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    compile 'org.ini4j:ini4j:0.5.4'
+    compile 'org.apache.commons:commons-io:1.3.2'
+}
+
+jar {
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    manifest {
+        attributes 'Main-Class': 'mcd.OpenMCD'
+    }
+}
