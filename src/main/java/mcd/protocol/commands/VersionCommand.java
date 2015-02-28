@@ -8,9 +8,6 @@ import java.text.DecimalFormat;
 import java.time.Instant;
 
 public class VersionCommand extends BasicCommand {
-    public VersionCommand(Client client, String name) {
-        super(client, name);
-    }
 
     protected String getTimestamp() {
         float now = (float) Instant.now().toEpochMilli() / 1000;

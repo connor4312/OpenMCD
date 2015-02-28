@@ -1,13 +1,15 @@
 package mcd;
 
+import com.google.inject.Guice;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
+import com.google.inject.Singleton;
 import mcd.config.Config;
-import mcd.config.IniConfig;
-import mcd.protocol.TCPServer;
+import mcd.protocol.Server;
 import org.apache.commons.io.FilenameUtils;
-
-import java.io.File;
 import java.io.IOException;
 
+@Singleton
 public class OpenMCD {
 
     /**
@@ -16,15 +18,21 @@ public class OpenMCD {
     protected Config config;
 
     /**
-     * Singleton instance of OpenMCD
+     * The network server.
      */
-    private static OpenMCD instance;
+    protected Server server;
+
+    @Inject
+    public OpenMCD(Config config, Server server) throws IOException {
+        this.config = config;
+        this.server = server;
+    }
 
     /**
-     * Returns the current directory the jar is executing in.
+     * Gets the daemon's base directory.
      * @return a file path
      */
-    public String cwd() {
+    public String getBaseDirectory() {
         String jarPath = getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
         return FilenameUtils.getFullPath(jarPath);
     }
@@ -32,36 +40,30 @@ public class OpenMCD {
     /**
      * Attempts to load the MCD config. Expects it to be beside the jar
      */
-    public void loadConfig() throws IOException {
-        config = new IniConfig();
+    protected void loadConfig() throws IOException {
+        config.load(this.getBaseDirectory());
     }
 
     /**
-     * Gets the config object currently loaded.
-     * @return the config object
+     * Starts up the MCD daemon.
      */
-    public Config getConfig() {
-        return config;
-    }
+    public void boot() throws IOException {
+        loadConfig();
 
-    /**
-     * Returns an instance of the OpenMCD singleton.
-     * @return openmcd instance
-     */
-    public static OpenMCD instance() {
-        if (instance == null) {
-            instance = new OpenMCD();
+        try {
+            int port = Integer.parseInt((String) config.get("multicraft.port"));
+            server.listen(port);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
-        return instance;
     }
 
     public static void main(String[] args) {
+        Injector injector = Guice.createInjector(new MCDInjector());
+        OpenMCD app = injector.getInstance(OpenMCD.class);
+
         try {
-            OpenMCD app = instance();
-            app.loadConfig();
-            System.out.println(app.getConfig().get("foo"));
-            new TCPServer(25465).listen();
+            app.boot();
         } catch (IOException e) {
             e.printStackTrace();
         }

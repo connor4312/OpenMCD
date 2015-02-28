@@ -6,9 +6,6 @@ import mcd.protocol.Client;
 import java.io.IOException;
 
 public class AuthCommand extends BasicCommand {
-    public AuthCommand(Client client, String name) {
-        super(client, name);
-    }
 
     @Override
     public void run() {

@@ -1,24 +1,31 @@
 package mcd.protocol;
 
+import com.google.inject.Inject;
+import com.google.inject.Injector;
+
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.Socket;
 
 public class TCPServer implements Server {
 
     /**
-     * port to listen on
+     * Instance of the ioc injector
      */
-    protected int port;
+    private Injector injector;
 
-    public TCPServer(int port) {
-        this.port = port;
+    @Inject
+    public TCPServer(Injector injector) {
+        this.injector = injector;
     }
 
-    public void listen() throws IOException {
+    public void listen(int port) throws IOException {
         ServerSocket server = new ServerSocket(port);
 
         while (true) {
-            Client client = new TCPClient(server.accept());
+            Socket socket = server.accept();
+            TCPClient client = injector.getInstance(TCPClient.class);
+            client.setSocket(socket);
             new Thread(client).start();
         }
     }

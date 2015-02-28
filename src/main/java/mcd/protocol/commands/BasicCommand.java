@@ -12,9 +12,19 @@ abstract public class BasicCommand implements Command {
      */
     protected Client client;
 
-    public BasicCommand(Client client, String name) {
-        this.name = name;
+    /**
+     * raw command data
+     */
+    protected String data;
+
+    @Override
+    public void setClient(Client client) {
         this.client = client;
+    }
+
+    @Override
+    public void setData(String data) {
+        this.data = data;
     }
 
     @Override

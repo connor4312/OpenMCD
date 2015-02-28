@@ -1,11 +1,13 @@
 package mcd.protocol;
 
+import com.google.inject.Inject;
 import mcd.protocol.commands.Factory;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.Socket;
 
 public class TCPClient implements Client {
     /**
@@ -28,9 +30,13 @@ public class TCPClient implements Client {
      */
     protected Factory factory;
 
-    public TCPClient(java.net.Socket socket) throws IOException {
+    @Inject
+    public TCPClient(Factory factory) throws IOException {
+        this.factory = factory;
+    }
+
+    public void setSocket(Socket socket) {
         this.socket = socket;
-        this.factory = new Factory();
     }
 
     @Override
