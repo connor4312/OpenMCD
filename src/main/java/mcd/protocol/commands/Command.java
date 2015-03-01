@@ -26,4 +26,11 @@ public interface Command extends Runnable {
      * @param client net client
      */
     public void setClient(Client client);
+
+    /**
+     * Returns whether the command can be accessed without having to
+     * authenticate first.
+     * @return true if public, false otherwise
+     */
+    public boolean isPublic();
 }

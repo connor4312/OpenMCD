@@ -36,4 +36,9 @@ abstract public class BasicCommand implements Command {
     public Client getClient() {
         return client;
     }
+
+    @Override
+    public boolean isPublic() {
+        return false;
+    }
 }

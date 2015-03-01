@@ -1,6 +1,8 @@
 package mcd;
 
 import com.google.inject.AbstractModule;
+import mcd.auth.ShaTokenExchange;
+import mcd.auth.TokenExchange;
 import mcd.config.Config;
 import mcd.config.IniConfig;
 import mcd.protocol.Server;
@@ -11,5 +13,6 @@ public class MCDInjector extends AbstractModule {
     protected void configure() {
         bind(Server.class).to(TCPServer.class);
         bind(Config.class).to(IniConfig.class);
+        bind(TokenExchange.class).to(ShaTokenExchange.class);
     }
 }
