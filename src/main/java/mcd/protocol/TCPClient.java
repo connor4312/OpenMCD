@@ -9,8 +9,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
-import java.util.HashMap;
-import java.util.Map;
 
 public class TCPClient implements Client {
     /**
@@ -36,13 +34,12 @@ public class TCPClient implements Client {
     /**
      * State held on the client.
      */
-    protected Map<String, Object> state;
+    protected ClientState state;
 
     @Inject
     public TCPClient(Factory factory) throws IOException {
         this.factory = factory;
-        this.state = new HashMap<>();
-
+        this.state = ClientState.CONNECTED;
     }
 
     public void setSocket(Socket socket) {
@@ -50,17 +47,26 @@ public class TCPClient implements Client {
     }
 
     @Override
-    public Map<String, Object> getState() {
+    public ClientState getState() {
         return state;
     }
 
     @Override
-    public String read() throws IOException {
-        if (input == null) {
-            input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        }
+    public void setState(ClientState state) {
+        this.state = state;
+    }
 
-        return input.readLine();
+    @Override
+    public String read() {
+        try {
+            if (input == null) {
+                input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            }
+
+            return input.readLine();
+        } catch (IOException e) {
+            return null;
+        }
     }
 
     @Override
@@ -102,16 +108,10 @@ public class TCPClient implements Client {
 
     @Override
     public void run() {
-        while (connected()) {
-            String input;
+        String input;
 
-            try {
-                input = read();
-            } catch (IOException e) {
-                e.printStackTrace();
-                return;
-            }
-
+        while ((input = read()) != null) {
+            // Attempt to dispatch the command.
             Command command = factory.parse(this, input);
             if (canRunCommand(command)) {
                 command.run();
@@ -126,7 +126,7 @@ public class TCPClient implements Client {
      */
     protected boolean canRunCommand(Command command) {
         // If the command isn't public and we're not authed, false!
-        if (!command.isPublic() && !this.state.containsKey("authed")) {
+        if (!command.runsUnder().contains(state)) {
             return false;
         }
 

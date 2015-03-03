@@ -1,13 +1,22 @@
 package mcd.protocol.commands;
 
+import mcd.protocol.ClientState;
 import mcd.protocol.Response;
 import mcd.protocol.Client;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.time.Instant;
+import java.util.ArrayList;
 
 public class VersionCommand extends BasicCommand {
+
+    public VersionCommand() {
+        super();
+
+        this.runsUnder = new ArrayList<>();
+        this.runsUnder.add(ClientState.AUTHENTICATED);
+    }
 
     protected String getTimestamp() {
         float now = (float) Instant.now().toEpochMilli() / 1000;

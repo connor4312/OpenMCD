@@ -1,11 +1,13 @@
 package mcd.protocol.commands;
 
+import com.google.inject.Inject;
 import mcd.auth.TokenExchange;
 import mcd.config.Config;
+import mcd.protocol.ClientState;
 import mcd.protocol.Response;
-import mcd.protocol.Client;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class AuthCommand extends BasicCommand {
     /**
@@ -18,14 +20,13 @@ public class AuthCommand extends BasicCommand {
      */
     protected TokenExchange exchange;
 
+    @Inject
     public AuthCommand(Config config, TokenExchange exchange) {
         this.config = config;
         this.exchange = exchange;
-    }
 
-    @Override
-    public boolean isPublic() {
-        return true;
+        this.runsUnder = new ArrayList<>();
+        this.runsUnder.add(ClientState.CONNECTED);
     }
 
     @Override
@@ -38,15 +39,16 @@ public class AuthCommand extends BasicCommand {
         if (config.has("multicraft.password")) {
             String token = exchange.generateToken();
             response.put("token", token);
-            client.getState().put("token", token);
             response.setMessage("token sent");
+            client.setState(ClientState.AUTHENTICATING);
         }
         // Otherwise, they're good!
         else {
-            client.getState().put("authed", true);
+            client.setState(ClientState.AUTHENTICATED);
             response.setMessage("already authed");
         }
 
+        // write the response down to the socket.
         try {
             client.write(response);
         } catch (IOException e) {

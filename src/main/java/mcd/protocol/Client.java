@@ -8,7 +8,7 @@ public interface Client extends Runnable {
      * Reads a string from the socket, blocking until a new one is available.
      * @return string of data
      */
-    public String read() throws IOException;
+    public String read();
 
     /**
      * Returns whether the socket is still connected and able to be read from.
@@ -34,10 +34,16 @@ public interface Client extends Runnable {
     public void close();
 
     /**
-     * Gets the current "state" of the client (hashmap)
-     * @return the map state of the client
+     * Gets the current "state" of the client.
+     * @return the client's current state
      */
-    public Map<String, Object> getState();
+    public ClientState getState();
+
+    /**
+     * Sets the client state.
+     * @param state the new state to set to
+     */
+    public void setState(ClientState state);
 
     /**
      * Returns the remote server address of the connecting client.

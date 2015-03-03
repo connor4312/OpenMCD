@@ -1,5 +1,6 @@
 package mcd.auth;
 
+import com.google.inject.Inject;
 import mcd.config.Config;
 import org.apache.commons.lang3.RandomStringUtils;
 
@@ -12,6 +13,7 @@ public class ShaTokenExchange implements TokenExchange {
      */
     protected Config config;
 
+    @Inject
     public ShaTokenExchange(Config config) {
         this.config = config;
     }

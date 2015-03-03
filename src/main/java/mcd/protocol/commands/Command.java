@@ -1,6 +1,9 @@
 package mcd.protocol.commands;
 
 import mcd.protocol.Client;
+import mcd.protocol.ClientState;
+
+import java.util.List;
 
 public interface Command extends Runnable {
     /**
@@ -28,9 +31,8 @@ public interface Command extends Runnable {
     public void setClient(Client client);
 
     /**
-     * Returns whether the command can be accessed without having to
-     * authenticate first.
-     * @return true if public, false otherwise
+     * Returns an array of states under which the command may be run.
+     * @return array of ClientStates
      */
-    public boolean isPublic();
+    public List<ClientState> runsUnder();
 }

@@ -1,6 +1,9 @@
 package mcd.protocol.commands;
 
 import mcd.protocol.Client;
+import mcd.protocol.ClientState;
+
+import java.util.List;
 
 abstract public class BasicCommand implements Command {
     /**
@@ -16,6 +19,11 @@ abstract public class BasicCommand implements Command {
      * raw command data
      */
     protected String data;
+
+    /**
+     * List of client states under which the command may be run.
+     */
+    protected List<ClientState> runsUnder;
 
     @Override
     public void setClient(Client client) {
@@ -38,7 +46,7 @@ abstract public class BasicCommand implements Command {
     }
 
     @Override
-    public boolean isPublic() {
-        return false;
+    public List<ClientState> runsUnder() {
+        return runsUnder;
     }
 }
