@@ -1,8 +1,5 @@
 package mcd.protocol;
 
-import java.io.IOException;
-import java.util.Map;
-
 public interface Client extends Runnable {
     /**
      * Reads a string from the socket, blocking until a new one is available.
@@ -20,13 +17,13 @@ public interface Client extends Runnable {
      * Writes data out to the socket.
      * @param data the data to write
      */
-    public void write(String data) throws IOException;
+    public void write(String data);
 
     /**
      * Writes a response out to the socket.
      * @param data the response to write
      */
-    public void write(Response data) throws IOException;
+    public void write(Response data);
 
     /**
      * Terminates a client connection and event loop.
@@ -34,16 +31,10 @@ public interface Client extends Runnable {
     public void close();
 
     /**
-     * Gets the current "state" of the client.
+     * Gets the current state object of the client.
      * @return the client's current state
      */
     public ClientState getState();
-
-    /**
-     * Sets the client state.
-     * @param state the new state to set to
-     */
-    public void setState(ClientState state);
 
     /**
      * Returns the remote server address of the connecting client.

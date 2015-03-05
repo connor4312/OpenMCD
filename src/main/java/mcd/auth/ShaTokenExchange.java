@@ -4,12 +4,14 @@ import com.google.inject.Inject;
 import mcd.config.Config;
 import org.apache.commons.lang3.RandomStringUtils;
 
+import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 
 public class ShaTokenExchange implements TokenExchange {
     /**
-     * MCD config sintance
+     * MCD config instance
      */
     protected Config config;
 
@@ -20,13 +22,16 @@ public class ShaTokenExchange implements TokenExchange {
 
     @Override
     public String generateToken() {
-        return RandomStringUtils.random(32);
+        return RandomStringUtils.random(32, false, true);
     }
 
     @Override
     public boolean verify(String token, String signature) {
         String password = (String) config.get("multicraft.password");
-        String hashed = hash(xor(token + hash(hash(password)), hash(password)));
+        String hashed = Base64.getEncoder().encodeToString(
+                xor(hash(token + hash(hash(password))), hash(password)).getBytes()
+        );
+
         return hashed.equals(signature);
     }
 
@@ -36,12 +41,17 @@ public class ShaTokenExchange implements TokenExchange {
      * @return output digest
      */
     protected String hash(String string) {
-        MessageDigest md = null;
+        MessageDigest md;
         try {
             md = MessageDigest.getInstance("SHA-1");
-        } catch (NoSuchAlgorithmException ignored) {}
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("SHA-1 algorithm unavailable.");
+        }
+
         md.update(string.getBytes());
-        return new String(md.digest());
+        byte[] hash = md.digest();
+
+        return (new HexBinaryAdapter()).marshal(hash).toLowerCase();
     }
 
     /**

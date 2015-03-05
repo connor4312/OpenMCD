@@ -1,38 +1,27 @@
 package mcd.protocol.commands;
 
 import mcd.protocol.Client;
-import mcd.protocol.ClientState;
 
-import java.util.List;
-
-public interface Command extends Runnable {
-    /**
-     * Returns the command name as sent from the panel.
-     * @return the command name
-     */
-    public String getName();
+public interface Command {
 
     /**
-     * Returns the socket the command was sent on.
-     * @return a TCP socket object
+     * Dispatches a command to run.
+     * @param client the associated network client
+     * @param data the raw command string
      */
-    public Client getClient();
+    public void run(Client client, String data) throws InvalidRunstateException;
 
     /**
-     * Sets the command data
-     * @param data raw command data
+     * Checks whether the client is in a fit state to run this command.
+     * If not, it throws an exception.
      */
-    public void setData(String data);
+    public void assertRunsOn(Client client) throws InvalidRunstateException;
 
     /**
-     * The associated net client.
-     * @param client net client
+     * Returns whether the command matches and should be run from
+     * the given string.
+     * @param command the original command string
+     * @return true if it should be run
      */
-    public void setClient(Client client);
-
-    /**
-     * Returns an array of states under which the command may be run.
-     * @return array of ClientStates
-     */
-    public List<ClientState> runsUnder();
+    public boolean matches(String command);
 }

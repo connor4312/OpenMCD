@@ -3,11 +3,10 @@ package mcd.protocol.commands;
 import com.google.inject.Inject;
 import mcd.auth.TokenExchange;
 import mcd.config.Config;
-import mcd.protocol.ClientState;
+import mcd.protocol.Client;
 import mcd.protocol.Response;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 public class AuthCommand extends BasicCommand {
     /**
@@ -24,35 +23,43 @@ public class AuthCommand extends BasicCommand {
     public AuthCommand(Config config, TokenExchange exchange) {
         this.config = config;
         this.exchange = exchange;
-
-        this.runsUnder = new ArrayList<>();
-        this.runsUnder.add(ClientState.CONNECTED);
     }
 
     @Override
-    public void run() {
+    public void run(Client client, String data) {
         Response response = client.getResponse();
         response.setSuccessful(true);
 
+        // If the client is not unauthenticated, they're good
+        if (client.getState().isAuthenticated()) {
+            response.setMessage("already authed");
+        }
         // If the user defined a password, we need to send them down a token
         // to sign and verify with.
-        if (config.has("multicraft.password")) {
+        else if (config.has("multicraft.password")) {
             String token = exchange.generateToken();
             response.put("token", token);
             response.setMessage("token sent");
-            client.setState(ClientState.AUTHENTICATING);
+            client.getState().setAuthToken(token);
         }
-        // Otherwise, they're good!
+        // Otherwise, just say they don't need a password. Multicraft wants
+        // to provide "none" as a password by default, but this seems like
+        // stupidity -- er, excuse me -- security through obscurity. So
+        // ignore that.
         else {
-            client.setState(ClientState.AUTHENTICATED);
-            response.setMessage("already authed");
+            client.getState().setAuthenticated(true);
+            response.setMessage("no password necessary");
         }
 
         // write the response down to the socket.
-        try {
-            client.write(response);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        client.write(response);
     }
+
+    @Override
+    public boolean matches(String command) {
+        return command.equals("auth");
+    }
+
+    @Override
+    public void assertRunsOn(Client client) throws InvalidRunstateException {}
 }

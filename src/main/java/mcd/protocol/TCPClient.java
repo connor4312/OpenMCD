@@ -3,6 +3,7 @@ package mcd.protocol;
 import com.google.inject.Inject;
 import mcd.protocol.commands.Command;
 import mcd.protocol.commands.Factory;
+import mcd.protocol.commands.InvalidRunstateException;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -37,9 +38,9 @@ public class TCPClient implements Client {
     protected ClientState state;
 
     @Inject
-    public TCPClient(Factory factory) throws IOException {
+    public TCPClient(Factory factory, ClientState state) throws IOException {
         this.factory = factory;
-        this.state = ClientState.CONNECTED;
+        this.state = state;
     }
 
     public void setSocket(Socket socket) {
@@ -49,11 +50,6 @@ public class TCPClient implements Client {
     @Override
     public ClientState getState() {
         return state;
-    }
-
-    @Override
-    public void setState(ClientState state) {
-        this.state = state;
     }
 
     @Override
@@ -75,17 +71,21 @@ public class TCPClient implements Client {
     }
 
     @Override
-    public void write(String data) throws IOException {
-        if (output == null) {
-            output = new DataOutputStream(socket.getOutputStream());
-        }
+    public void write(String data) {
+        try {
+            if (output == null) {
+                output = new DataOutputStream(socket.getOutputStream());
+            }
 
-        output.writeBytes(data);
+            output.writeBytes(data);
+        } catch (IOException ignored) {
+            // happens when the socket closes. Do nothing.
+        }
     }
 
     @Override
-    public void write(Response response) throws IOException {
-        System.out.println(response.toString());
+    public void write(Response response) {
+        System.out.println(" ==== OUT ==== \n" + response.toString());
         write(response.toString());
     }
 
@@ -111,26 +111,20 @@ public class TCPClient implements Client {
         String input;
 
         while ((input = read()) != null) {
+            System.out.println(" ==== IN ==== \n" + input);
             // Attempt to dispatch the command.
-            Command command = factory.parse(this, input);
-            if (canRunCommand(command)) {
-                command.run();
+            try {
+                Command command = factory.parse(input);
+                command.assertRunsOn(this);
+                command.run(this, input);
+            } catch (InvalidRunstateException e) {
+                Response r = getResponse();
+                r.setMessage(e.getMessage());
+                r.setSuccessful(false);
+                write(r);
             }
         }
-    }
 
-    /**
-     * Returns whether or not the command can currently be run.
-     * @param command the command to check
-     * @return true if it can be run
-     */
-    protected boolean canRunCommand(Command command) {
-        // If the command isn't public and we're not authed, false!
-        if (!command.runsUnder().contains(state)) {
-            return false;
-        }
-
-        // True otherwise
-        return true;
+        close();
     }
 }

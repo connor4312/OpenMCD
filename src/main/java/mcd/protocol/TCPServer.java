@@ -39,7 +39,7 @@ public class TCPServer implements Server {
 
     /**
      * Processes an incoming connection and dispatches it on a thread.
-     * @param socket the incoming socket
+     * @param client the incoming client
      */
     protected void handleClient(TCPClient client) {
         if (!authorizer.authorize(client)) {
