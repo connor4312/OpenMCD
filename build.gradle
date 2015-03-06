@@ -25,6 +25,8 @@ dependencies {
     compile 'org.apache.commons:commons-io:1.3.2'
     compile 'org.apache.commons:commons-lang3:3.3'
     compile 'com.google.guice:com.springsource.com.google.inject:2.0.0'
+    testCompile 'junit:junit:4.11'
+    testCompile 'org.mockito:mockito-core:1.+'
 }
 
 jar {
