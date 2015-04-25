@@ -4,7 +4,8 @@ import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
-import mcd.config.Config;
+import mcd.config.DaemonConfig;
+import mcd.config.loader.Config;
 import mcd.protocol.Server;
 import org.apache.commons.io.FilenameUtils;
 import java.io.IOException;
@@ -15,7 +16,7 @@ public class OpenMCD {
     /**
      * The current MCD config.
      */
-    protected Config config;
+    protected DaemonConfig config;
 
     /**
      * The network server.
@@ -23,7 +24,7 @@ public class OpenMCD {
     protected Server server;
 
     @Inject
-    public OpenMCD(Config config, Server server) throws IOException {
+    public OpenMCD(DaemonConfig config, Server server) throws IOException {
         this.config = config;
         this.server = server;
     }

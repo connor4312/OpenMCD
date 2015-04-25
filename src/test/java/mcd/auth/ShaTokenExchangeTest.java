@@ -1,7 +1,7 @@
 package mcd.auth;
 
-import mcd.auth.ShaTokenExchange;
-import mcd.config.Config;
+import mcd.config.DaemonConfig;
+import mcd.config.loader.Config;
 import org.junit.Test;
 import org.junit.Before;
 import org.junit.After;
@@ -12,11 +12,11 @@ import static org.mockito.Mockito.*;
 public class ShaTokenExchangeTest {
 
     protected ShaTokenExchange exchange;
-    protected Config config;
+    protected DaemonConfig config;
 
     @Before
     public void before() throws Exception {
-        config = mock(Config.class);
+        config = mock(DaemonConfig.class);
         when(config.get("multicraft.password")).thenReturn("none");
         exchange = new ShaTokenExchange(config);
     }

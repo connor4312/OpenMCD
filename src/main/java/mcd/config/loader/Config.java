@@ -1,4 +1,4 @@
-package mcd.config;
+package mcd.config.loader;
 
 import java.io.IOException;
 

@@ -2,17 +2,19 @@ package mcd.protocol.commands;
 
 import com.google.inject.Inject;
 import mcd.auth.TokenExchange;
-import mcd.config.Config;
+import mcd.config.DaemonConfig;
+import mcd.config.loader.Config;
 import mcd.protocol.Client;
 import mcd.protocol.Response;
 
-import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class AuthCommand extends BasicCommand {
     /**
      * MCD configuration
      */
-    protected Config config;
+    protected DaemonConfig config;
 
     /**
      * Exchange object for generating tokens.
@@ -20,7 +22,7 @@ public class AuthCommand extends BasicCommand {
     protected TokenExchange exchange;
 
     @Inject
-    public AuthCommand(Config config, TokenExchange exchange) {
+    public AuthCommand(DaemonConfig config, TokenExchange exchange) {
         this.config = config;
         this.exchange = exchange;
     }
@@ -38,7 +40,9 @@ public class AuthCommand extends BasicCommand {
         // to sign and verify with.
         else if (config.has("multicraft.password")) {
             String token = exchange.generateToken();
-            response.put("token", token);
+            Map<String, String> out = new HashMap<>();
+            out.put("token", token);
+            response.addEntry(out);
             response.setMessage("token sent");
             client.getState().setAuthToken(token);
         }

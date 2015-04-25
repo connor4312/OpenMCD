@@ -1,7 +1,8 @@
 package mcd.auth;
 
 import com.google.inject.Inject;
-import mcd.config.Config;
+import mcd.config.DaemonConfig;
+import mcd.config.loader.Config;
 import mcd.protocol.Client;
 
 public class ConnectionAuthorizer {
@@ -9,10 +10,10 @@ public class ConnectionAuthorizer {
     /**
      * Configuration for the mcd
      */
-    protected Config config;
+    protected DaemonConfig config;
 
     @Inject
-    public ConnectionAuthorizer(Config config) {
+    public ConnectionAuthorizer(DaemonConfig config) {
         this.config = config;
     }
 

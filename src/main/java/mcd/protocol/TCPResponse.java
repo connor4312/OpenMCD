@@ -1,9 +1,11 @@
 package mcd.protocol;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public class TCPResponse extends HashMap<String, Object> implements Response {
+public class TCPResponse implements Response {
 
     /**
      * Whether the request was successful.
@@ -14,6 +16,15 @@ public class TCPResponse extends HashMap<String, Object> implements Response {
      * The optional message to send after the response code.
      */
     protected String message = "";
+
+    /**
+     * The list of data entries to response with.
+     */
+    protected List<Map<String, String>> entries;
+
+    public TCPResponse() {
+        this.entries = new ArrayList<>();
+    }
 
     /**
      * Sanitizes the values for use in serialization.
@@ -30,12 +41,18 @@ public class TCPResponse extends HashMap<String, Object> implements Response {
      */
     protected StringBuilder serialize() {
         StringBuilder builder = new StringBuilder(" ");
-        for (Map.Entry<String, Object> entry : entrySet()) {
-            builder.append(escape(entry.getKey())).append(" :");
-            builder.append(escape(entry.getValue().toString())).append(" :");
+        for (Map<String, String> entry : entries) {
+            builder.append(" ");
+
+            for (Map.Entry<String, String> e : entry.entrySet()) {
+                builder.append(escape(e.getKey())).append(" :");
+                builder.append(escape(e.getValue())).append(" :");
+            }
+
+            builder.append("\n");
         }
 
-        return builder.append("\n");
+        return builder;
     }
 
     /**
@@ -65,6 +82,11 @@ public class TCPResponse extends HashMap<String, Object> implements Response {
     @Override
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    @Override
+    public void addEntry(Map<String, String> entry) {
+        entries.add(entry);
     }
 
     @Override

@@ -2,7 +2,8 @@ package mcd.protocol.commands;
 
 import com.google.inject.Inject;
 import mcd.auth.TokenExchange;
-import mcd.config.Config;
+import mcd.config.DaemonConfig;
+import mcd.config.loader.Config;
 import mcd.protocol.Client;
 import mcd.protocol.Response;
 
@@ -16,7 +17,7 @@ public class TokenCommand extends BasicCommand {
     protected static String prefix = "codeword: ";
 
     @Inject
-    public TokenCommand(Config config, TokenExchange exchange) {
+    public TokenCommand(DaemonConfig config, TokenExchange exchange) {
         this.exchange = exchange;
     }
 

@@ -5,6 +5,8 @@ import mcd.protocol.Client;
 
 import java.text.DecimalFormat;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 
 public class VersionCommand extends BasicCommand {
 
@@ -28,10 +30,13 @@ public class VersionCommand extends BasicCommand {
     public void run(Client client, String string) {
         Response response = client.getResponse();
         response.setSuccessful(true);
-        response.put("info", "");
-        response.put("version", "1.8.2");
-        response.put("remote", "1.8.2");
-        response.put("time", getTimestamp());
+        Map<String, String> out = new HashMap<>();
+        out.put("info", "");
+        out.put("version", "1.8.2");
+        out.put("remote", "1.8.2");
+        out.put("time", getTimestamp());
+        response.addEntry(out);
+
         client.write(response);
     }
 
