@@ -111,6 +111,28 @@ The resulting codeword should be taken and sent back in a packet like ``codeword
 * You'll get a packet ``>ERROR - incorrect authorization\n`` immediately followed by a disconnect.
 * You'll get a packet ``>OK - client authorized - welcome\n``, at which point you're good to go!
 
+A full exchange might look like the following::
+
+    // Successful exchange:
+    Server: "auth\n"
+    Daemon: " token :4275310260\n>OK - token sent\n"
+    Server: "codeword: AAYHWgEDWgEOUVZUVVoMBFADAAxSAApQAAFdUAACAgAAClYDBQIAVA==\n"
+    Daemon: ">OK - client authorized - welcome\n"
+
+    // Invalid password:
+    Server: "auth\n"`
+    Daemon: " token :3455545750\n>OK - token sent\n"
+    Server: "codeword: VVUHDwdVX1EOVAQCUlAHDAUCVgldUlEHBgpbC10EAw9aWVdVClRQBA==\n"`
+    Daemon: ">ERROR - incorrect authorization\n"
+
+    // Already Authed:
+    Server: "auth\n"
+    Daemon: ">OK - already authed\n"
+
+    // Invalid IP:
+    Server: "auth\n"
+    <Daemon Closes Connection>
+
 To recap with a small flowchart::
 
             SERVER             DAEMON
