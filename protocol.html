@@ -1,0 +1,231 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Protocol &mdash; Multicraft Protocol 1.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Multicraft Protocol 1.0.0 documentation" href="index.html" />
+    <link rel="prev" title="Welcome Multicraft Protocol documentation!" href="index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="index.html" title="Welcome Multicraft Protocol documentation!"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Multicraft Protocol 1.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="protocol">
+<h1>Protocol<a class="headerlink" href="#protocol" title="Permalink to this headline">¶</a></h1>
+<p>The Multicraft daemon protocol is a directional which operates by sending ISO-8859-1 strings over a TCP connection. Herein we will refer to the packets the panel sends as <em>server packets</em>, and packets the daemon sends as <em>daemon packets</em>.</p>
+<p>As far as I am aware, the daemon protocol has not changed substantially since the inception of Multicraft, and no backwards incompatible changes have been made. The foundational information covered here should be valid for all versions.</p>
+<p>Example exchange which retrieves version info from the daemon:</p>
+<div class="highlight-javascript"><div class="highlight"><pre><span class="nx">Server</span><span class="o">:</span> <span class="s2">&quot;auth\n&quot;</span>
+<span class="nx">Daemon</span><span class="o">:</span> <span class="s2">&quot; token :4275310260\n&gt;OK - token sent\n&quot;</span>
+<span class="nx">Server</span><span class="o">:</span> <span class="s2">&quot;codeword: AAYHWgEDWgEOUVZUVVoMBFADAAxSAApQAAFdUAACAgAAClYDBQIAVA==\n&quot;</span>
+<span class="nx">Daemon</span><span class="o">:</span> <span class="s2">&quot;&gt;OK - client authorized - welcome\n&quot;</span>
+<span class="nx">Server</span><span class="o">:</span> <span class="s2">&quot;version\n&quot;</span>
+<span class="nx">Daemon</span><span class="o">:</span> <span class="s2">&quot; info : :version :1.8.2 :remote :1.8.2 :time :1425097329.33 :\n&gt;OK\n&quot;</span>
+</pre></div>
+</div>
+<div class="section" id="server-packets">
+<h2>Server Packets<a class="headerlink" href="#server-packets" title="Permalink to this headline">¶</a></h2>
+<p>Server packets are single strings which end with a line feed (LF) character <code class="docutils literal"><span class="pre">\n</span></code>. Unfortunately, as far as I have been able to discern so far, each &#8220;action&#8221; the server sends has a rather unique signature which requires specialized parsing.</p>
+<p>Examples of some server packets:</p>
+<div class="highlight-javascript"><div class="highlight"><pre><span class="nx">Get</span> <span class="nx">the</span> <span class="nx">daemon</span> <span class="nx">version</span><span class="o">:</span>
+<span class="s2">&quot;version\n&quot;</span>
+
+<span class="nx">Confirm</span> <span class="nx">a</span> <span class="nx">password</span><span class="o">:</span>
+<span class="s2">&quot;codeword: AAYHWgEDWgEOUVZUVVoMBFADAAxSAApQAAFdUAACAgAAClYDBQIAVA==\n&quot;</span>
+
+<span class="nx">Run</span> <span class="nx">a</span> <span class="nx">jar</span> <span class="nx">update</span><span class="o">:</span>
+<span class="s2">&quot;updatejar start ::spudbukkit\n&quot;</span>
+
+<span class="nx">List</span> <span class="nx">players</span> <span class="nx">of</span> <span class="nx">a</span> <span class="nx">server</span><span class="o">:</span>
+<span class="s2">&quot;server 2:get players\n&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="daemon-packets">
+<h2>Daemon Packets<a class="headerlink" href="#daemon-packets" title="Permalink to this headline">¶</a></h2>
+<p>Strangely, the daemon implements a custom serialization method. It&#8217;s rather difficult to read for humans, but fairly trivial to generate. A packet is made of zero or more &#8220;data&#8221; lines following by a &#8220;status&#8221; line, each delimited by LF characters.</p>
+<p>Data lines consist of a space as the first character of the line, followed by one or more key/value pairs delimited by a space followed by a colon. For example, the line &#8221; info : :version :1.8.2 :n&#8221; might more commonly be expressed as the JSON object <code class="docutils literal"><span class="pre">{</span> <span class="pre">info:</span> <span class="pre">&quot;&quot;,</span> <span class="pre">version:</span> <span class="pre">&quot;1.8.2&quot;</span> <span class="pre">}</span></code>. In pseudo-code, and encoder might look like the following:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">escape</span><span class="p">(</span><span class="nb">str</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&quot; :&quot;</span><span class="p">,</span> <span class="s">&quot; </span><span class="se">\\</span><span class="s">:&quot;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">encode</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="s">&quot; &quot;</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="n">output</span> <span class="o">+=</span> <span class="n">escape</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>   <span class="o">+</span> <span class="s">&quot; :&quot;</span>
+        <span class="n">output</span> <span class="o">+=</span> <span class="n">escape</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot; :&quot;</span>
+
+    <span class="k">return</span> <span class="n">output</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">For the sake of our sanity, daemon packet information will be presented as JSON throughout this documentation.</p>
+</div>
+<p>Each daemon packet ends with a &#8220;status&#8221;, which is a greater than sign, followed by <code class="docutils literal"><span class="pre">OK</span></code> or <code class="docutils literal"><span class="pre">ERROR</span></code>. This can optionally be followed by a space, hyphen, and a space, after which some custom error message may be sent. Finally, the line should end with a line feed.</p>
+<p>Examples of some daemon packets:</p>
+<div class="highlight-javascript"><div class="highlight"><pre><span class="nx">Sending</span> <span class="nx">an</span> <span class="nx">auth</span> <span class="nx">toke</span> <span class="nx">to</span> <span class="nx">the</span> <span class="nx">server</span><span class="o">:</span>
+<span class="s2">&quot; token :4275310260\n&gt;OK - token sent\n&quot;</span>
+
+<span class="nx">Responding</span> <span class="nx">to</span> <span class="nx">a</span> <span class="nx">version</span> <span class="nx">request</span><span class="o">:</span>
+<span class="s2">&quot; info : :version :1.8.2 :remote :1.8.2 :time :1425097329.33 :\n&gt;OK&quot;</span>
+
+<span class="nx">If</span> <span class="nx">the</span> <span class="nx">daemon</span> <span class="nx">password</span> <span class="nx">hash</span> <span class="nx">is</span> <span class="nx">wrong</span><span class="o">:</span>
+<span class="s2">&quot;&gt;ERROR - incorrect authorization\n&quot;</span>
+
+<span class="nx">Getting</span> <span class="nx">jar</span> <span class="nx">statuses</span><span class="o">:</span>
+<span class="s2">&quot; jar :minecraft_server.jar :name :Default Minecraft Server :\n&quot;</span> <span class="o">+</span>
+<span class="s2">&quot; jar :craftbukkit.jar :name :Mod: Craftbukkit :\n&quot;</span> <span class="o">+</span>
+<span class="s2">&quot;&gt;OK - List sent\n&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="authentication">
+<h2>Authentication<a class="headerlink" href="#authentication" title="Permalink to this headline">¶</a></h2>
+<p>Authentication is required in order to run any command except <code class="docutils literal"><span class="pre">auth</span></code>. Authenticated state is stored on the connection, and within the panel a single connection may be reused across multiple requests (using PHP&#8217;s <code class="docutils literal"><span class="pre">pfsockopen</span></code>).</p>
+<p>Rather than using something like TLS to ensure data integrity, authentication is established using the following mechanism:</p>
+<ul class="simple">
+<li>Send an <code class="docutils literal"><span class="pre">auth</span></code> packet to the server.</li>
+<li>Receive a reply from the the server indicating a token to use for hashing.</li>
+<li>Do a little cryptographic juggling, and send <code class="docutils literal"><span class="pre">token</span></code> packet back.</li>
+</ul>
+<p>The auth is a simple, unadorned string packet that looks like <code class="docutils literal"><span class="pre">auth\n</span></code>. Following the sending of this packet, one of three things may happen:</p>
+<ul class="simple">
+<li>The daemon might close the connection if the connecting IP is not allowed to connect to it.</li>
+<li>The daemon might say <code class="docutils literal"><span class="pre">&gt;OK</span> <span class="pre">-</span> <span class="pre">already</span> <span class="pre">authed\n</span></code> if authentication has already been established on the connection.</li>
+<li>The daemon can send a token packet, in the form <code class="docutils literal"><span class="pre">token</span> <span class="pre">:4275310260\n&gt;OK</span> <span class="pre">-</span> <span class="pre">token</span> <span class="pre">sent\n</span></code></li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The daemon <strong>always</strong> requires a &#8220;password&#8221; authentication. If you have not set up password authentication, you should simply use the string <code class="docutils literal"><span class="pre">none</span></code> for the password.</p>
+</div>
+<p>Assuming you&#8217;ve got a token, you now need to do a little work to get the &#8220;codeword&#8221; to send back. In pseudo-code again:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">password</span> <span class="o">=</span> <span class="n">get_daemon_password</span><span class="p">()</span>
+<span class="n">codeword</span> <span class="o">=</span> <span class="n">base64_encode</span><span class="p">(</span><span class="n">sha1</span><span class="p">(</span><span class="n">token</span> <span class="o">+</span> <span class="n">sha1</span><span class="p">(</span><span class="n">sha1</span><span class="p">(</span><span class="n">password</span><span class="p">)))</span> <span class="o">^</span> <span class="n">sha1</span><span class="p">(</span><span class="n">password</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The PHP implementation of this can be found in <code class="docutils literal"><span class="pre">protected/components/McBridge.php</span></code> within the panel, and my Java version is <a class="reference external" href="https://github.com/connor4312/OpenMCD/blob/master/src/main/java/mcd/auth/ShaTokenExchange.java#L30">here</a>.</p>
+<p>The resulting codeword should be taken and sent back in a packet like <code class="docutils literal"><span class="pre">codeword:</span> <span class="pre">AAYHWgEDWgEOUVZUVVoMBFADAAxSAApQAAFdUAACAgAAClYDBQIAVA==\n</span></code>. Then, one of two things will happen:</p>
+<ul class="simple">
+<li>You&#8217;ll get a packet <code class="docutils literal"><span class="pre">&gt;ERROR</span> <span class="pre">-</span> <span class="pre">incorrect</span> <span class="pre">authorization\n</span></code> immediately followed by a disconnect.</li>
+<li>You&#8217;ll get a packet <code class="docutils literal"><span class="pre">&gt;OK</span> <span class="pre">-</span> <span class="pre">client</span> <span class="pre">authorized</span> <span class="pre">-</span> <span class="pre">welcome\n</span></code>, at which point you&#8217;re good to go!</li>
+</ul>
+<p>To recap with a small flowchart:</p>
+<div class="highlight-javascript"><div class="highlight"><pre>        SERVER             DAEMON
+
++----------------+   +-------------------+
+| `auth` packet  +---&gt; check IP is valid |
++----------------+   +---------+---------+
+                               |
+                               |
++----------------+   +---------v---------+
+| crypto juggling&lt;---+ send random token |
++-------+--------+   +-------------------+
+        |
+        |
++-------v--------+   +-------------------+
+| send `token`   +---&gt; verify token      |
++----------------+   +-------------------+
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Protocol</a><ul>
+<li><a class="reference internal" href="#server-packets">Server Packets</a></li>
+<li><a class="reference internal" href="#daemon-packets">Daemon Packets</a></li>
+<li><a class="reference internal" href="#authentication">Authentication</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome Multicraft Protocol documentation!</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/protocol.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Connor Peet <connor@peet.io>.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.3</a>
+      
+      |
+      <a href="_sources/protocol.txt"
+          rel="nofollow">Page source</a></li>
+    </div>
+
+    
+
+    
+  </body>
+</html>
