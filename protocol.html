@@ -148,6 +148,28 @@
 <li>You&#8217;ll get a packet <code class="docutils literal"><span class="pre">&gt;ERROR</span> <span class="pre">-</span> <span class="pre">incorrect</span> <span class="pre">authorization\n</span></code> immediately followed by a disconnect.</li>
 <li>You&#8217;ll get a packet <code class="docutils literal"><span class="pre">&gt;OK</span> <span class="pre">-</span> <span class="pre">client</span> <span class="pre">authorized</span> <span class="pre">-</span> <span class="pre">welcome\n</span></code>, at which point you&#8217;re good to go!</li>
 </ul>
+<p>A full exchange might look like the following:</p>
+<div class="highlight-javascript"><div class="highlight"><pre>// Successful exchange:
+Server: &quot;auth\n&quot;
+Daemon: &quot; token :4275310260\n&gt;OK - token sent\n&quot;
+Server: &quot;codeword: AAYHWgEDWgEOUVZUVVoMBFADAAxSAApQAAFdUAACAgAAClYDBQIAVA==\n&quot;
+Daemon: &quot;&gt;OK - client authorized - welcome\n&quot;
+
+// Invalid password:
+Server: &quot;auth\n&quot;`
+Daemon: &quot; token :3455545750\n&gt;OK - token sent\n&quot;
+Server: &quot;codeword: VVUHDwdVX1EOVAQCUlAHDAUCVgldUlEHBgpbC10EAw9aWVdVClRQBA==\n&quot;`
+Daemon: &quot;&gt;ERROR - incorrect authorization\n&quot;
+
+// Already Authed:
+Server: &quot;auth\n&quot;
+Daemon: &quot;&gt;OK - already authed\n&quot;
+
+// Invalid IP:
+Server: &quot;auth\n&quot;
+&lt;Daemon Closes Connection&gt;
+</pre></div>
+</div>
 <p>To recap with a small flowchart:</p>
 <div class="highlight-javascript"><div class="highlight"><pre>        SERVER             DAEMON
 
