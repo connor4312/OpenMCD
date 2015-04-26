@@ -1,0 +1,67 @@
+Jar Management
+==============
+
+Jars are by default stored in a ``jar`` folder on the daemon. A jar consists of two parts, the config file and the actual executable jar file. The jar file's name always matches the name of the config file, without the ``.conf`` extension. So ``craftbukkit.jar.conf`` would be the configuration for a ``craftbukkit.jar``.
+
+Listing Installed Jars
+----------------------
+
+In order to list installed jars, simply send a ``updatejar list :\n`` packet to the daemon. The result is a series of data entries containing the internal jar name (like "craftbukkit.jar") and its display name (like "Mod: Craftbukkit"). Example::
+
+
+    Server: "updatejar list :\n"
+    Daemon: " jar :minecraft_server.jar :name :Default Minecraft Server :\n" +
+            " jar :craftbukkit.jar :name :Mod: Craftbukkit :\n" +
+            " jar :minecraft_optimized.jar :name :Optimized Minecraft Server :\n" +
+            " jar :craftbukkit_beta.jar :name :Mod: Craftbukkit Beta :\n" +
+            ">OK - List sent\n"
+
+Updating Jars and Configs
+-------------------------
+
+Both jars and config files may be updated automatically. Updating happens in two steps: downloading, and installing.
+
+Downloading is triggered by sending a packet in the form ``updatejar start :type:name\n``, where ``type`` is either jar (to update the jar file), conf (to update the config file), or the empty string (to update both), and ``name`` is the basename of the jar you're updating.
+
+Example::
+
+    To update both config and jar:
+    "updatejar start ::craftbukkit.jar\n"
+
+    To update the config:
+    "updatejar start :conf:craftbukkit.jar\n"
+
+    To update the jar:
+    "updatejar start :jar:craftbukkit.jar\n"
+
+The response to this command is one or more "status" data rows, which bear the properties:
+
+* ``status`` is one of:
+    * "running", indicating a download is currently in progress,
+    * "ready", indicating that a download has completed and is ready to be installed,
+    * "uptodate", indicating that the currently installed item is up to date and does not need installation,
+    * "error", indicating the update failed, or
+    * "done", indicating the installation completed successfully.
+* ``target`` which indicates the file the update line is for. This is in the form "basename" for the jar file itself, or "basename.conf" for the config file.
+* ``percent`` is a decimal number from 0 to 1 indicating download progress.
+* ``updater``, best I can tell, is the number of the thread within the daemon the update is happening on. There are no usages of this in the Multicraft 1.8 or 2.0 panels. My guess is that it's an debugging tool, or artifact of previous panel versions.
+* ``time`` is a unix timestamp in seconds, to two decimal places. It indicates the last time the status changed.
+* ``message`` is the display message used with the status. As far as I have seen, it's only used with the "uptodate" and "error" statuses. Otherwise it is left blank.
+
+You can also retrieve the jar status at any time by sending the panel ``updatejar status :1\n`` (no, the "1" on the end of the command does not have any significance). If there have been updates since the daemon was started up, they'll be displayed as data lines (even completed updates). Otherwise, it will return "no update in progress." Examples::
+
+    // Starting an update for craftbukkit
+    Server: "updatejar start ::craftbukkit.jar\n"
+    Daemon: " status :running :target :craftbukkit.jar :percent :0 :updater :1 :time :0 :message : :\n"
+    Daemon: " status :running :target :craftbukkit.jar.conf :percent :0 :updater :1 :time :1425353249.52 :message : :\n"
+    Daemon: ">OK\n"
+
+    // Status after a download where the config file is up to date, and the jar update is ready to install.
+    Server: "updatejar status :1\n"
+    Daemon: " status :ready :target :spudbukkit :percent :1.0 :updater :1 :time :1429996718.84 :message : :\n" +
+            " status :uptodate :target :spudbukkit.conf :percent :1.0 :updater :1 :time :1429996718.84 :message :File has not changed, no update necessary :\n" +
+            ">OK\n"
+
+    // If there have not been any updates in the daemon's "lifetime":
+    Server: "updatejar status :1\n"
+    Daemon: ">OK - No update in progress\n"

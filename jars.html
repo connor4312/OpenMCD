@@ -1,0 +1,186 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Jar Management &mdash; Multicraft Protocol 1.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Multicraft Protocol 1.0.0 documentation" href="index.html" />
+    <link rel="prev" title="Protocol" href="protocol.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="protocol.html" title="Protocol"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Multicraft Protocol 1.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="jar-management">
+<h1>Jar Management<a class="headerlink" href="#jar-management" title="Permalink to this headline">¶</a></h1>
+<p>Jars are by default stored in a <code class="docutils literal"><span class="pre">jar</span></code> folder on the daemon. A jar consists of two parts, the config file and the actual executable jar file. The jar file&#8217;s name always matches the name of the config file, without the <code class="docutils literal"><span class="pre">.conf</span></code> extension. So <code class="docutils literal"><span class="pre">craftbukkit.jar.conf</span></code> would be the configuration for a <code class="docutils literal"><span class="pre">craftbukkit.jar</span></code>.</p>
+<div class="section" id="listing-installed-jars">
+<h2>Listing Installed Jars<a class="headerlink" href="#listing-installed-jars" title="Permalink to this headline">¶</a></h2>
+<p>In order to list installed jars, simply send a <code class="docutils literal"><span class="pre">updatejar</span> <span class="pre">list</span> <span class="pre">:\n</span></code> packet to the daemon. The result is a series of data entries containing the internal jar name (like &#8220;craftbukkit.jar&#8221;) and its display name (like &#8220;Mod: Craftbukkit&#8221;). Example:</p>
+<div class="highlight-javascript"><div class="highlight"><pre><span class="nx">Server</span><span class="o">:</span> <span class="s2">&quot;updatejar list :\n&quot;</span>
+<span class="nx">Daemon</span><span class="o">:</span> <span class="s2">&quot; jar :minecraft_server.jar :name :Default Minecraft Server :\n&quot;</span> <span class="o">+</span>
+        <span class="s2">&quot; jar :craftbukkit.jar :name :Mod: Craftbukkit :\n&quot;</span> <span class="o">+</span>
+        <span class="s2">&quot; jar :minecraft_optimized.jar :name :Optimized Minecraft Server :\n&quot;</span> <span class="o">+</span>
+        <span class="s2">&quot; jar :craftbukkit_beta.jar :name :Mod: Craftbukkit Beta :\n&quot;</span> <span class="o">+</span>
+        <span class="s2">&quot;&gt;OK - List sent\n&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="updating-jars-and-configs">
+<h2>Updating Jars and Configs<a class="headerlink" href="#updating-jars-and-configs" title="Permalink to this headline">¶</a></h2>
+<p>Both jars and config files may be updated automatically. Updating happens in two steps: downloading, and installing.</p>
+<p>Downloading is triggered by sending a packet in the form <code class="docutils literal"><span class="pre">updatejar</span> <span class="pre">start</span> <span class="pre">:type:name\n</span></code>, where <code class="docutils literal"><span class="pre">type</span></code> is either jar (to update the jar file), conf (to update the config file), or the empty string (to update both), and <code class="docutils literal"><span class="pre">name</span></code> is the basename of the jar you&#8217;re updating.</p>
+<p>Example:</p>
+<div class="highlight-javascript"><div class="highlight"><pre><span class="nx">To</span> <span class="nx">update</span> <span class="nx">both</span> <span class="nx">config</span> <span class="nx">and</span> <span class="nx">jar</span><span class="o">:</span>
+<span class="s2">&quot;updatejar start ::craftbukkit.jar\n&quot;</span>
+
+<span class="nx">To</span> <span class="nx">update</span> <span class="nx">the</span> <span class="nx">config</span><span class="o">:</span>
+<span class="s2">&quot;updatejar start :conf:craftbukkit.jar\n&quot;</span>
+
+<span class="nx">To</span> <span class="nx">update</span> <span class="nx">the</span> <span class="nx">jar</span><span class="o">:</span>
+<span class="s2">&quot;updatejar start :jar:craftbukkit.jar\n&quot;</span>
+</pre></div>
+</div>
+<p>The response to this command is one or more &#8220;status&#8221; data rows, which bear the properties:</p>
+<ul>
+<li><dl class="first docutils">
+<dt><code class="docutils literal"><span class="pre">status</span></code> is one of:</dt>
+<dd><ul class="first last simple">
+<li>&#8220;running&#8221;, indicating a download is currently in progress,</li>
+<li>&#8220;ready&#8221;, indicating that a download has completed and is ready to be installed,</li>
+<li>&#8220;uptodate&#8221;, indicating that the currently installed item is up to date and does not need installation,</li>
+<li>&#8220;error&#8221;, indicating the update failed, or</li>
+<li>&#8220;done&#8221;, indicating the installation completed successfully.</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p class="first"><code class="docutils literal"><span class="pre">target</span></code> which indicates the file the update line is for. This is in the form &#8220;basename&#8221; for the jar file itself, or &#8220;basename.conf&#8221; for the config file.</p>
+</li>
+<li><p class="first"><code class="docutils literal"><span class="pre">percent</span></code> is a decimal number from 0 to 1 indicating download progress.</p>
+</li>
+<li><p class="first"><code class="docutils literal"><span class="pre">updater</span></code>, best I can tell, is the number of the thread within the daemon the update is happening on. There are no usages of this in the Multicraft 1.8 or 2.0 panels. My guess is that it&#8217;s an debugging tool, or artifact of previous panel versions.</p>
+</li>
+<li><p class="first"><code class="docutils literal"><span class="pre">time</span></code> is a unix timestamp in seconds, to two decimal places. It indicates the last time the status changed.</p>
+</li>
+<li><p class="first"><code class="docutils literal"><span class="pre">message</span></code> is the display message used with the status. As far as I have seen, it&#8217;s only used with the &#8220;uptodate&#8221; and &#8220;error&#8221; statuses. Otherwise it is left blank.</p>
+</li>
+</ul>
+<p>You can also retrieve the jar status at any time by sending the panel <code class="docutils literal"><span class="pre">updatejar</span> <span class="pre">status</span> <span class="pre">:1\n</span></code> (no, the &#8220;1&#8221; on the end of the command does not have any significance). If there have been updates since the daemon was started up, they&#8217;ll be displayed as data lines (even completed updates). Otherwise, it will return &#8220;no update in progress.&#8221; Examples:</p>
+<div class="highlight-javascript"><div class="highlight"><pre><span class="c1">// Starting an update for craftbukkit</span>
+<span class="nx">Server</span><span class="o">:</span> <span class="s2">&quot;updatejar start ::craftbukkit.jar\n&quot;</span>
+<span class="nx">Daemon</span><span class="o">:</span> <span class="s2">&quot; status :running :target :craftbukkit.jar :percent :0 :updater :1 :time :0 :message : :\n&quot;</span>
+<span class="nx">Daemon</span><span class="o">:</span> <span class="s2">&quot; status :running :target :craftbukkit.jar.conf :percent :0 :updater :1 :time :1425353249.52 :message : :\n&quot;</span>
+<span class="nx">Daemon</span><span class="o">:</span> <span class="s2">&quot;&gt;OK\n&quot;</span>
+
+<span class="c1">// Status after a download where the config file is up to date, and the jar update is ready to install.</span>
+<span class="nx">Server</span><span class="o">:</span> <span class="s2">&quot;updatejar status :1\n&quot;</span>
+<span class="nx">Daemon</span><span class="o">:</span> <span class="s2">&quot; status :ready :target :spudbukkit :percent :1.0 :updater :1 :time :1429996718.84 :message : :\n&quot;</span> <span class="o">+</span>
+        <span class="s2">&quot; status :uptodate :target :spudbukkit.conf :percent :1.0 :updater :1 :time :1429996718.84 :message :File has not changed, no update necessary :\n&quot;</span> <span class="o">+</span>
+        <span class="s2">&quot;&gt;OK\n&quot;</span>
+
+<span class="c1">// If there have not been any updates in the daemon&#39;s &quot;lifetime&quot;:</span>
+<span class="nx">Server</span><span class="o">:</span> <span class="s2">&quot;updatejar status :1\n&quot;</span>
+<span class="nx">Daemon</span><span class="o">:</span> <span class="s2">&quot;&gt;OK - No update in progress\n&quot;</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Jar Management</a><ul>
+<li><a class="reference internal" href="#listing-installed-jars">Listing Installed Jars</a></li>
+<li><a class="reference internal" href="#updating-jars-and-configs">Updating Jars and Configs</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="protocol.html"
+                        title="previous chapter">Protocol</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/jars.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Connor Peet <connor@peet.io>.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.3</a>
+      
+      |
+      <a href="_sources/jars.txt"
+          rel="nofollow">Page source</a></li>
+    </div>
+
+    
+
+    
+  </body>
+</html>
