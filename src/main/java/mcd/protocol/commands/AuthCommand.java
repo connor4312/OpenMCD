@@ -3,7 +3,6 @@ package mcd.protocol.commands;
 import com.google.inject.Inject;
 import mcd.auth.TokenExchange;
 import mcd.config.DaemonConfig;
-import mcd.config.loader.Config;
 import mcd.protocol.Client;
 import mcd.protocol.Response;
 

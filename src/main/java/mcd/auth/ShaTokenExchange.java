@@ -2,7 +2,6 @@ package mcd.auth;
 
 import com.google.inject.Inject;
 import mcd.config.DaemonConfig;
-import mcd.config.loader.Config;
 import org.apache.commons.lang3.RandomStringUtils;
 
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;

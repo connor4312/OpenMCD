@@ -1,6 +1,7 @@
 package mcd.config.loader;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 public interface Config {
     /**
@@ -19,7 +20,7 @@ public interface Config {
 
     /**
      * Loads the config from a file or network path.
-     * @param path path to load from
+     * @param stream the stream to load from
      */
-    public void load(String path) throws IOException;
+    public void load(InputStream stream) throws IOException;
 }

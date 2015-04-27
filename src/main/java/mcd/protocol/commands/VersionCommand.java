@@ -1,7 +1,7 @@
 package mcd.protocol.commands;
 
-import mcd.protocol.Response;
 import mcd.protocol.Client;
+import mcd.protocol.Response;
 
 import java.text.DecimalFormat;
 import java.time.Instant;

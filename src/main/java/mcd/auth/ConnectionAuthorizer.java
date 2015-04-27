@@ -2,7 +2,6 @@ package mcd.auth;
 
 import com.google.inject.Inject;
 import mcd.config.DaemonConfig;
-import mcd.config.loader.Config;
 import mcd.protocol.Client;
 
 public class ConnectionAuthorizer {

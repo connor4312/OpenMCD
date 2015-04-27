@@ -2,8 +2,8 @@ package mcd.config.loader;
 
 import org.ini4j.Wini;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 public class IniConfig implements Config {
 
@@ -12,13 +12,8 @@ public class IniConfig implements Config {
      */
     protected Wini config;
 
-    /**
-     * Config filename.
-     */
-    public static String filename = "mcd.conf";
-
-    public void load(String path) throws IOException {
-        config = new Wini(new File(path));
+    public void load(InputStream stream) throws IOException {
+        config = new Wini(stream);
     }
 
     @Override
